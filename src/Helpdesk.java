@@ -1,30 +1,68 @@
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Helpdesk {
-    private List<Issue> issues;
-    private int nextId;
-
-    public Helpdesk() {
-        issues = new ArrayList<>();
-        nextId = 1;
-    }
-
     public void reportIssue(String description, String reporterName) {
-        Issue issue = new Issue(nextId++, description, reporterName);
-        issues.add(issue);
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "INSERT INTO issues (description, reporter_name) VALUES (?, ?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, description);
+            stmt.setString(2, reporterName);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseUtil.close(conn, stmt, null);
+        }
     }
 
     public List<Issue> getIssues() {
+        List<Issue> issues = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "SELECT * FROM issues";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String description = rs.getString("description");
+                String reporterName = rs.getString("reporter_name");
+                String status = rs.getString("status");
+                issues.add(new Issue(id, description, reporterName, status));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseUtil.close(conn, stmt, rs);
+        }
+
         return issues;
     }
 
     public void resolveIssue(int id) {
-        for (Issue issue : issues) {
-            if (issue.getId() == id) {
-                issue.setStatus("Resolved");
-                return;
-            }
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "UPDATE issues SET status = 'Resolved' WHERE id = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseUtil.close(conn, stmt, null);
         }
     }
 }
