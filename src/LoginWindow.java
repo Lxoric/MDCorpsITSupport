@@ -1,11 +1,8 @@
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,62 +16,81 @@ public class LoginWindow extends JFrame {
     private JLabel usernameErrorLabel;
     private JLabel passwordErrorLabel;
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new LoginWindow().setVisible(true); // Start with the login window
+            }
+        });
+    }
+
     public LoginWindow() {
         setTitle("Login");
-        setSize(400, 200);
+        setSize(1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(5, 2));
+        setLocationRelativeTo(null); // Center the window on the screen
+
+        // Main panel with padding
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(new Color(240, 240, 240)); // Light gray background
+
+        // Card panel for the form
+        JPanel cardPanel = new JPanel();
+        cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
+        cardPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setMaximumSize(new Dimension(400, Integer.MAX_VALUE)); // Limit width
+
+        // Title
+        JLabel titleLabel = new JLabel("Login");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        cardPanel.add(titleLabel);
+        cardPanel.add(Box.createVerticalStrut(20)); // Spacing
 
         // Username field
-        add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        usernameField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-        });
-        add(usernameField);
+        JPanel usernamePanel = createFormField("Username:", usernameField = new JTextField(20));
         usernameErrorLabel = new JLabel();
         usernameErrorLabel.setForeground(Color.RED);
-        add(usernameErrorLabel);
+        usernamePanel.add(usernameErrorLabel);
+        cardPanel.add(usernamePanel);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Password field
-        add(new JLabel("Password:"));
-        passwordField = new JPasswordField();
-        passwordField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                validatePassword();
-            }
-        });
-        add(passwordField);
+        JPanel passwordPanel = createFormField("Password:", passwordField = new JPasswordField(20));
         passwordErrorLabel = new JLabel();
         passwordErrorLabel.setForeground(Color.RED);
-        add(passwordErrorLabel);
+        passwordPanel.add(passwordErrorLabel);
+        cardPanel.add(passwordPanel);
+        cardPanel.add(Box.createVerticalStrut(20));
 
         // Login button
         loginButton = new JButton("Login");
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setBackground(new Color(0, 123, 255)); // Blue background
+        loginButton.setForeground(Color.WHITE); // White text
+        loginButton.setFocusPainted(false);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loginUser();
             }
         });
-        add(loginButton);
+        cardPanel.add(loginButton);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Register button (redirect to registration window)
         registerButton = new JButton("Don't have an account? Register");
+        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        registerButton.setBorderPainted(false);
+        registerButton.setFocusPainted(false);
+        registerButton.setContentAreaFilled(false);
+        registerButton.setForeground(new Color(0, 123, 255)); // Blue text
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -82,27 +98,28 @@ public class LoginWindow extends JFrame {
                 new RegistrationWindow().setVisible(true); // Open the registration window
             }
         });
-        add(registerButton);
+        cardPanel.add(registerButton);
 
-        setVisible(true);
+        // Add card panel to main panel
+        mainPanel.add(cardPanel, BorderLayout.CENTER);
+        add(mainPanel);
+
+        setVisible(true); // Ensure the window is visible
     }
 
-    private void validateUsername() {
-        String username = usernameField.getText().trim();
-        if (username.isEmpty()) {
-            usernameErrorLabel.setText("Username cannot be empty.");
-        } else {
-            usernameErrorLabel.setText("");
-        }
-    }
+    private JPanel createFormField(String labelText, JTextField textField) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setBackground(Color.WHITE);
 
-    private void validatePassword() {
-        String password = new String(passwordField.getPassword()).trim();
-        if (password.isEmpty()) {
-            passwordErrorLabel.setText("Password cannot be empty.");
-        } else {
-            passwordErrorLabel.setText("");
-        }
+        JLabel label = new JLabel(labelText);
+        label.setPreferredSize(new Dimension(100, 30)); // Fixed label width
+        panel.add(label);
+
+        textField.setMaximumSize(new Dimension(200, 30)); // Fixed text field size
+        panel.add(textField);
+
+        return panel;
     }
 
     private void loginUser() {
@@ -128,12 +145,32 @@ public class LoginWindow extends JFrame {
             if (rs.next()) {
                 JOptionPane.showMessageDialog(this, "Login successful!");
                 dispose(); // Close the login window
-                new ITHelpdeskClientGUI().setVisible(true); // Open the main IT Helpdesk window
+                new ITHelpdeskClientGUI(username).setVisible(true); // Open the main IT Helpdesk window with the logged-in username
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password.", "Login Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred. Please try again later.", "Database Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred. Please try again later.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void validateUsername() {
+        String username = usernameField.getText().trim();
+        if (username.isEmpty()) {
+            usernameErrorLabel.setText("Username cannot be empty.");
+        } else {
+            usernameErrorLabel.setText("");
+        }
+    }
+
+    private void validatePassword() {
+        String password = new String(passwordField.getPassword()).trim();
+        if (password.isEmpty()) {
+            passwordErrorLabel.setText("Password cannot be empty.");
+        } else {
+            passwordErrorLabel.setText("");
         }
     }
 }

@@ -1,11 +1,8 @@
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -29,147 +26,106 @@ public class RegistrationWindow extends JFrame {
 
     public RegistrationWindow() {
         setTitle("Registration");
-        setSize(400, 500);
+        setSize(1024, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(13, 2));
+        setLocationRelativeTo(null); // Center the window on the screen
+
+        // Main panel with padding
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(new Color(240, 240, 240)); // Light gray background
+
+        // Card panel for the form
+        JPanel cardPanel = new JPanel();
+        cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
+        cardPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setMaximumSize(new Dimension(600, Integer.MAX_VALUE)); // Limit width
+
+        // Title
+        JLabel titleLabel = new JLabel("Registration");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        cardPanel.add(titleLabel);
+        cardPanel.add(Box.createVerticalStrut(20)); // Spacing
 
         // Username field
-        add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        usernameField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateUsername();
-            }
-        });
-        add(usernameField);
+        JPanel usernamePanel = createFormField("Username:", usernameField = new JTextField(20));
         usernameErrorLabel = new JLabel();
         usernameErrorLabel.setForeground(Color.RED);
-        add(usernameErrorLabel);
+        usernamePanel.add(usernameErrorLabel);
+        cardPanel.add(usernamePanel);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Password field
-        add(new JLabel("Password:"));
-        passwordField = new JPasswordField();
-        passwordField.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                validatePassword();
-            }
-        });
-        add(passwordField);
+        JPanel passwordPanel = createFormField("Password:", passwordField = new JPasswordField(20));
         passwordErrorLabel = new JLabel();
         passwordErrorLabel.setForeground(Color.RED);
-        add(passwordErrorLabel);
+        passwordPanel.add(passwordErrorLabel);
+        cardPanel.add(passwordPanel);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // First name field
-        add(new JLabel("First Name:"));
-        firstNameField = new JTextField();
-        firstNameField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateFirstName();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateFirstName();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateFirstName();
-            }
-        });
-        add(firstNameField);
+        JPanel firstNamePanel = createFormField("First Name:", firstNameField = new JTextField(20));
         firstNameErrorLabel = new JLabel();
         firstNameErrorLabel.setForeground(Color.RED);
-        add(firstNameErrorLabel);
+        firstNamePanel.add(firstNameErrorLabel);
+        cardPanel.add(firstNamePanel);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Middle name field
-        add(new JLabel("Middle Name:"));
-        middleNameField = new JTextField();
-        add(middleNameField);
+        cardPanel.add(createFormField("Middle Name:", middleNameField = new JTextField(20)));
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Last name field
-        add(new JLabel("Last Name:"));
-        lastNameField = new JTextField();
-        lastNameField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateLastName();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateLastName();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateLastName();
-            }
-        });
-        add(lastNameField);
+        JPanel lastNamePanel = createFormField("Last Name:", lastNameField = new JTextField(20));
         lastNameErrorLabel = new JLabel();
         lastNameErrorLabel.setForeground(Color.RED);
-        add(lastNameErrorLabel);
+        lastNamePanel.add(lastNameErrorLabel);
+        cardPanel.add(lastNamePanel);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Prefix field
-        add(new JLabel("Prefix:"));
-        prefixField = new JTextField();
-        add(prefixField);
+        cardPanel.add(createFormField("Prefix:", prefixField = new JTextField(20)));
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Suffix field
-        add(new JLabel("Suffix:"));
-        suffixField = new JTextField();
-        add(suffixField);
+        cardPanel.add(createFormField("Suffix:", suffixField = new JTextField(20)));
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Department field
-        add(new JLabel("Department:"));
-        departmentField = new JTextField();
-        departmentField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                validateDepartment();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                validateDepartment();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                validateDepartment();
-            }
-        });
-        add(departmentField);
+        JPanel departmentPanel = createFormField("Department:", departmentField = new JTextField(20));
         departmentErrorLabel = new JLabel();
         departmentErrorLabel.setForeground(Color.RED);
-        add(departmentErrorLabel);
+        departmentPanel.add(departmentErrorLabel);
+        cardPanel.add(departmentPanel);
+        cardPanel.add(Box.createVerticalStrut(20));
 
         // Register button
         registerButton = new JButton("Register");
+        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        registerButton.setBackground(new Color(0, 123, 255)); // Blue background
+        registerButton.setForeground(Color.WHITE); // White text
+        registerButton.setFocusPainted(false);
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 registerUser();
             }
         });
-        add(registerButton);
+        cardPanel.add(registerButton);
+        cardPanel.add(Box.createVerticalStrut(10));
 
         // Login button (redirect to login window)
         loginButton = new JButton("Already have an account? Login");
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setBorderPainted(false);
+        loginButton.setFocusPainted(false);
+        loginButton.setContentAreaFilled(false);
+        loginButton.setForeground(new Color(0, 123, 255)); // Blue text
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -177,9 +133,81 @@ public class RegistrationWindow extends JFrame {
                 new LoginWindow().setVisible(true); // Open the login window
             }
         });
-        add(loginButton);
+        cardPanel.add(loginButton);
+
+        // Add card panel to main panel
+        mainPanel.add(cardPanel, BorderLayout.CENTER);
+        add(mainPanel);
 
         setVisible(true);
+    }
+
+    private JPanel createFormField(String labelText, JTextField textField) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setBackground(Color.WHITE);
+
+        JLabel label = new JLabel(labelText);
+        label.setPreferredSize(new Dimension(100, 30)); // Fixed label width
+        panel.add(label);
+
+        textField.setMaximumSize(new Dimension(300, 30)); // Fixed text field size
+        panel.add(textField);
+
+        return panel;
+    }
+
+    private void registerUser() {
+        String username = usernameField.getText().trim();
+        String password = new String(passwordField.getPassword()).trim();
+        String firstName = firstNameField.getText().trim();
+        String middleName = middleNameField.getText().trim();
+        String lastName = lastNameField.getText().trim();
+        String prefix = prefixField.getText().trim();
+        String suffix = suffixField.getText().trim();
+        String department = departmentField.getText().trim();
+
+        // Validate all fields before proceeding
+        validateUsername();
+        validatePassword();
+        validateFirstName();
+        validateLastName();
+        validateDepartment();
+
+        if (!usernameErrorLabel.getText().isEmpty() ||
+                !passwordErrorLabel.getText().isEmpty() ||
+                !firstNameErrorLabel.getText().isEmpty() ||
+                !lastNameErrorLabel.getText().isEmpty() ||
+                !departmentErrorLabel.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fix the errors before submitting.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            String sql = "INSERT INTO users (username, password, first_name, middle_name, last_name, prefix, suffix, department) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, username);
+            stmt.setString(2, password); // In a real application, hash the password before storing it
+            stmt.setString(3, firstName);
+            stmt.setString(4, middleName);
+            stmt.setString(5, lastName);
+            stmt.setString(6, prefix);
+            stmt.setString(7, suffix);
+            stmt.setString(8, department);
+            stmt.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Registration successful!");
+            dispose(); // Close the registration window
+            new LoginWindow().setVisible(true); // Redirect to the login window
+        } catch (SQLException e) {
+            if (e.getSQLState().equals("23000")) { // Duplicate entry (e.g., username already exists)
+                JOptionPane.showMessageDialog(this, "Username already exists. Please choose a different username.", "Registration Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "An unexpected error occurred. Please try again later.", "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred. Please try again later.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void validateUsername() {
@@ -234,53 +262,6 @@ public class RegistrationWindow extends JFrame {
             departmentErrorLabel.setText("Department must be less than 50 characters.");
         } else {
             departmentErrorLabel.setText("");
-        }
-    }
-
-    private void registerUser() {
-        String username = usernameField.getText().trim();
-        String password = new String(passwordField.getPassword()).trim();
-        String firstName = firstNameField.getText().trim();
-        String middleName = middleNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
-        String prefix = prefixField.getText().trim();
-        String suffix = suffixField.getText().trim();
-        String department = departmentField.getText().trim();
-
-        // Validate all fields before proceeding
-        validateUsername();
-        validatePassword();
-        validateFirstName();
-        validateLastName();
-        validateDepartment();
-
-        if (!usernameErrorLabel.getText().isEmpty() ||
-                !passwordErrorLabel.getText().isEmpty() ||
-                !firstNameErrorLabel.getText().isEmpty() ||
-                !lastNameErrorLabel.getText().isEmpty() ||
-                !departmentErrorLabel.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fix the errors before submitting.", "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        try (Connection conn = DatabaseUtil.getConnection()) {
-            String sql = "INSERT INTO users (username, password, first_name, middle_name, last_name, prefix, suffix, department) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-            stmt.setString(2, password); // In a real application, hash the password before storing it
-            stmt.setString(3, firstName);
-            stmt.setString(4, middleName);
-            stmt.setString(5, lastName);
-            stmt.setString(6, prefix);
-            stmt.setString(7, suffix);
-            stmt.setString(8, department);
-            stmt.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Registration successful!");
-            dispose(); // Close the registration window
-            new LoginWindow().setVisible(true); // Redirect to the login window
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
