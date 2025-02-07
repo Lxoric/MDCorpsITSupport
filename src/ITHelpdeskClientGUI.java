@@ -83,7 +83,7 @@ public class ITHelpdeskClientGUI extends JFrame {
         cardPanel.add(Box.createVerticalStrut(20));
 
         // Table to display issues
-        String[] columnNames = {"ID", "Description", "Reporter", "Status"};
+        String[] columnNames = {"ID", "Description", "Reporter", "Department", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -158,7 +158,8 @@ public class ITHelpdeskClientGUI extends JFrame {
             tableModel.addRow(new Object[]{
                     issue.getId(),
                     issue.getDescription(),
-                    issue.getReporterName(),
+                    issue.getFirstName() + " " + issue.getLastName(), // Full name
+                    issue.getDepartment(),
                     issue.getStatus()
             });
         }

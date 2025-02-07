@@ -1,14 +1,14 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class JsonResponse {
     private String status;
     private String message;
-    private List<Issue> issues;
+    private List<Issue> issues = new ArrayList<>(); // Now an ArrayList
 
-    // No-argument constructor (required by Jackson)
     public JsonResponse() {}
 
-    // Constructor for success/error messages
+    // Constructor for messages
     public JsonResponse(String message) {
         this.status = "SUCCESS";
         this.message = message;
@@ -23,10 +23,10 @@ public class JsonResponse {
     // Constructor for issues list
     public JsonResponse(String status, List<Issue> issues) {
         this.status = status;
-        this.issues = issues;
+        this.issues = new ArrayList<>(issues); // Enforce ArrayList
     }
 
-    // Getters and setters (required by Jackson)
+    // Getters and setters
     public String getStatus() {
         return status;
     }
@@ -47,7 +47,9 @@ public class JsonResponse {
         return issues;
     }
 
+    // Setter copies the list into an ArrayList
+    // Setter for issues
     public void setIssues(List<Issue> issues) {
-        this.issues = issues;
+        this.issues = new ArrayList<>(issues); // Enforce ArrayList
     }
 }

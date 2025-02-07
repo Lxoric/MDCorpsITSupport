@@ -9,10 +9,27 @@ public class Helpdesk {
 
         try {
             conn = DatabaseUtil.getConnection();
-            String sql = "INSERT INTO issues (description, reporter_name) VALUES (?, ?)";
+            String sql = "INSERT INTO issues (description, reporter_name, first_name, last_name, department, status) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, description);
             stmt.setString(2, reporterName);
+
+            // Fetch additional user details (first name, last name, department) from the database
+            String userSql = "SELECT first_name, last_name, department FROM users WHERE username = ?";
+            PreparedStatement userStmt = conn.prepareStatement(userSql);
+            userStmt.setString(1, reporterName);
+            ResultSet rs = userStmt.executeQuery();
+
+            if (rs.next()) {
+                stmt.setString(3, rs.getString("first_name"));
+                stmt.setString(4, rs.getString("last_name"));
+                stmt.setString(5, rs.getString("department"));
+            } else {
+                throw new SQLException("User not found: " + reporterName);
+            }
+
+            stmt.setString(6, "Open"); // Default status
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -36,9 +53,13 @@ public class Helpdesk {
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String description = rs.getString("description");
-                String reporterName = rs.getString("reporter_name");
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                String department = rs.getString("department");
                 String status = rs.getString("status");
-                issues.add(new Issue(id, description, reporterName, status));
+
+                // Create Issue object with all fields
+                issues.add(new Issue(id, description, firstName, lastName, department, status));
             }
         } catch (SQLException e) {
             e.printStackTrace();
