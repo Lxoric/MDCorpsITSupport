@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class ITHelpdeskClientGUI extends JFrame {
     private PrintWriter out;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private String loggedInUsername;
+    private List<Issue> cachedIssues = new ArrayList<>();
 
     public ITHelpdeskClientGUI(String loggedInUsername) {
         this.loggedInUsername = loggedInUsername;
@@ -152,17 +154,34 @@ public class ITHelpdeskClientGUI extends JFrame {
     }
 
     // Update the table with new issues
-    private void updateTable(List<Issue> issues) {
-        tableModel.setRowCount(0); // Clear existing data
-        for (Issue issue : issues) {
-            tableModel.addRow(new Object[]{
-                    issue.getId(),
-                    issue.getDescription(),
-                    issue.getFirstName() + " " + issue.getLastName(), // Full name
-                    issue.getDepartment(),
-                    issue.getStatus()
-            });
+    private void updateTable(List<Issue> newIssues) {
+        // 1. Find new issues not in the cache
+        List<Issue> newIssuesToAdd = new ArrayList<>();
+        for (Issue newIssue : newIssues) {
+            if (!cachedIssues.contains(newIssue)) {
+                newIssuesToAdd.add(newIssue);
+            }
         }
+
+        // 2. If there are new issues, update the table and cache
+        if (!newIssuesToAdd.isEmpty()) {
+            cachedIssues.addAll(newIssuesToAdd); // Update the cache
+            for (Issue issue : newIssuesToAdd) {
+                tableModel.addRow(new Object[]{
+                        issue.getId(),
+                        issue.getDescription(),
+                        issue.getFirstName() + " " + issue.getLastName(),
+                        issue.getDepartment(),
+                        issue.getStatus()
+                });
+            }
+        }
+    }
+
+    private boolean isSameIssue(Issue a, Issue b) {
+        return a.getId() == b.getId() &&
+                a.getStatus().equals(b.getStatus()) &&
+                a.getDescription().equals(b.getDescription());
     }
 
     private void reportIssue() {
@@ -196,31 +215,32 @@ public class ITHelpdeskClientGUI extends JFrame {
     }
 
     private void sendRequest(String command, Map<String, String> data) {
-        try {
-            JsonRequest request = new JsonRequest();
-            request.setCommand(command);
-            request.setData(data);
-            String jsonRequest = objectMapper.writeValueAsString(request);
-            out.println(jsonRequest);
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    JsonRequest request = new JsonRequest();
+                    request.setCommand(command);
+                    request.setData(data);
+                    String jsonRequest = objectMapper.writeValueAsString(request);
+                    out.println(jsonRequest);
 
-            String response = in.readLine();
-            if (response == null) return;
+                    String response = in.readLine();
+                    if (response == null) return null;
 
-            JsonResponse jsonResponse = objectMapper.readValue(response, JsonResponse.class);
-            if (jsonResponse.getStatus().equals("ERROR")) {
-                throw new IOException(jsonResponse.getMessage());
+                    JsonResponse jsonResponse = objectMapper.readValue(response, JsonResponse.class);
+                    if (command.equals("VIEW")) {
+                        SwingUtilities.invokeLater(() -> updateTable(jsonResponse.getIssues()));
+                    }
+                } catch (IOException e) {
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(ITHelpdeskClientGUI.this, "Error: " + e.getMessage())
+                    );
+                }
+                return null;
             }
-
-            if (command.equals("VIEW")) {
-                updateTable(jsonResponse.getIssues()); // Update the table with new data
-            } else {
-                JOptionPane.showMessageDialog(this, jsonResponse.getMessage());
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        }.execute();
     }
-
     public static void main(String[] args) {
         //For testing purposes only
         SwingUtilities.invokeLater(new Runnable() {
