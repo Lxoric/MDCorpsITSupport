@@ -31,7 +31,10 @@ public class ITHelpdeskClientGUI extends JFrame {
     public ITHelpdeskClientGUI(String loggedInUsername) {
         this.loggedInUsername = loggedInUsername;
         initializeUI();
-        startAutoRefresh(); // Start the timer for automatic updates
+        //startAutoRefresh(); // Start the timer for automatic updates
+
+        // Load the table at startup
+        sendRequest("VIEW", null);
     }
 
     private void initializeUI() {
@@ -147,11 +150,11 @@ public class ITHelpdeskClientGUI extends JFrame {
     }
 
     // Start the timer to auto-refresh every 15 seconds
-    private void startAutoRefresh() {
+    /** private void startAutoRefresh() {
         Timer timer = new Timer(15000, e -> sendRequest("VIEW", null));
         timer.setRepeats(true);
         timer.start();
-    }
+    }**/
 
     // Update the table with new issues
     private void updateTable(List<Issue> newIssues) {
@@ -198,6 +201,9 @@ public class ITHelpdeskClientGUI extends JFrame {
         data.put("reporterName", reporterName);
         sendRequest("REPORT", data);
         descriptionField.setText("");
+
+        // Refresh the table after submitting a new issue
+        sendRequest("VIEW", null);
     }
 
     private void resolveIssue() {
@@ -212,6 +218,9 @@ public class ITHelpdeskClientGUI extends JFrame {
         data.put("id", id);
         sendRequest("RESOLVE", data);
         resolveField.setText("");
+
+        // Refresh the table after resolving an issue
+        sendRequest("VIEW", null);
     }
 
     private void sendRequest(String command, Map<String, String> data) {
